@@ -51,4 +51,4 @@ git clone https://github.com/LuisFSouza/ufspet-mvp1.git
     ```
 
 ### Observações
-Caso de algum erro, tente atualizar sua versão do node para a recomendada acima.
+Caso de algum erro, tente atualizar sua versão do node para a recomendada acima, e tente atualizar seu npm usando `npm install -g npm@latest`.
