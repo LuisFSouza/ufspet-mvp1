@@ -23,6 +23,7 @@ git clone https://github.com/LuisFSouza/ufspet-mvp1.git
 2. **Banco de dados**: Crie um banco de dados no postgresql.
 
 3. **Backend**: Abra o terminal na pasta do projeto chamada backend
+
     3.1. **Instale as dependências**: Instale as dependências do backend
     ```
     npm install
@@ -41,6 +42,7 @@ git clone https://github.com/LuisFSouza/ufspet-mvp1.git
     ```
 
 4. **Frontend**: Abra o terminal na pasta do projeto chamada frontend
+
     4.1. **Instale as dependências**: Instale as dependências do frontend
     ```
     npm install --legacy-peer-deps
