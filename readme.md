@@ -10,7 +10,7 @@
 Antes de executar o projeto, siga os seguintes passos:
 
 1. **node js**: Certifique que você tem instalado o node. Caso não tenha, [clique aqui](https://nodejs.org/pt). A versão recomendada é a 20.18.1, a que estamos utilizando. 
-1. **postgresql**: Certifique que você tem instalado o postgres. Caso não tenha, [clique aqui](https://www.postgresql.org/).
+1. **postgresql**: Certifique que você tem instalado o postgresql. Caso não tenha, [clique aqui](https://www.postgresql.org/).
 
 ### Execução do Projeto
 Para executar o projeto, siga os seguintes passos:
