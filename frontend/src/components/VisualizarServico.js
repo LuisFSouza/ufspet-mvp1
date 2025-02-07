@@ -15,6 +15,7 @@ function VisualizarServico() {
     
     useEffect(() => {
         axios.get(`http://127.0.0.1:3344/servicos/${params.id}`).then((resposta) => {
+            console.log(resposta.data)
             setNome(resposta.data.nome)
             setDuracao(resposta.data.duracao)
             setPreco(resposta.data.preco)

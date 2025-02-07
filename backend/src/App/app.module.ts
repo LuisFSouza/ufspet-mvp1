@@ -1,10 +1,12 @@
 import { ServicosModule } from '../Serviço/servicos.module';
 import { ClientesModule } from '../Clientes/clientes.module';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ProdutosModule } from '../Produtos/produtos.module';
+import { AgendamentosModule } from 'src/Agendamentos/agendamentos.module';
+import { VendasModule } from 'src/Vendas/vendas.module';
 
 @Module({
-  imports: [ServicosModule, ClientesModule, ProdutosModule],
+  imports: [forwardRef(() => ServicosModule), ClientesModule, ProdutosModule, forwardRef(() => AgendamentosModule), VendasModule],
   controllers: [],
   providers: [],
 })

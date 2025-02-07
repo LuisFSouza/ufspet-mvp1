@@ -40,7 +40,8 @@ function NovoCliente(){
         }
     }
 
-    const limpar = () => {
+    const limpar = (event) => {
+        event.preventDefault()
         setNome("")
         setCpf("")
         setEmail("")
@@ -51,7 +52,7 @@ function NovoCliente(){
     return (
         <GerenciamentoCliente visualizacao={false} botoes={[
             <Button cor="#6F917F" texto="Cadastrar" handleClick={cadastrar} corTexto="#FFFFFF" largura='100%'/>,
-            <Button tipo="reset" cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
+            <Button cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
         ]} titulo="Clientes" estados={{nome, cpf, email, telefone, endereco}} 
         setEstados={{setNome, setCpf, setEmail, setTelefone, setEndereco}}
         subtitulo="Cadastro de Clientes" />

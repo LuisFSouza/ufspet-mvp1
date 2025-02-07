@@ -40,7 +40,8 @@ function NovoProduto() {
         }
     }
 
-    const limpar = () => {
+    const limpar = (event) => {
+        event.preventDefault()
         setFornecedor("")
         setQuantidade("")
         setMarca("")
@@ -51,7 +52,7 @@ function NovoProduto() {
     return (
         <GerenciamentoProduto visualizacao={false} botoes={[
             <Button cor="#6F917F" texto="Cadastrar" handleClick={cadastrar} corTexto="#FFFFFF" largura='100%'/>,
-            <Button tipo="reset" cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
+            <Button cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
         ]} titulo="Produtos" estados={{nome, marca, preco, quantidade, fornecedor}} 
         setEstados={{setNome, setMarca, setPreco, setFornecedor, setQuantidade}}
         subtitulo="Cadastro de Produtos" />

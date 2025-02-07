@@ -1,4 +1,5 @@
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator"
+import { IsDecimal, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator"
+import Decimal from "decimal.js"
 
 export class CreateProductDto{
     @IsString()
@@ -13,12 +14,12 @@ export class CreateProductDto{
     @IsOptional()
     fornecedor: string
 
-    @IsNumber()
+    @IsDecimal()
     @IsNotEmpty()
-    preco: number
+    preco: Decimal
     
     @IsInt()
-    @IsPositive()
+    @Min(0)
     @IsNotEmpty()
     quantidade: number
 }

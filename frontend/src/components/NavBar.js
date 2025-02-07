@@ -24,8 +24,10 @@ function NavBar() {
     return (
         <nav className="navbar navbar-expand-lg py-3" style={{backgroundColor: '#6F917F'}}>
         <div className="container-fluid">
-            <img alt="" src="/logo_ufspet_1.svg"></img>
-            <img alt="" src="/logo_ufspet_2.svg"></img>
+            <a href="/">
+                <img alt="" src="/logo_ufspet_1.svg"></img>
+                <img alt="" src="/logo_ufspet_2.svg"></img>
+            </a>
             <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
             </button>

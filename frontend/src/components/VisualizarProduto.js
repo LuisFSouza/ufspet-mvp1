@@ -21,6 +21,7 @@ function VisualizarProduto() {
             setPreco(resposta.data.preco)
             setQuantidade(resposta.data.quantidade)
             setFornecedor(resposta.data.fornecedor)
+
          }).catch((erro) => {
             if(erro.response){
                 setErro(erro.response.data.message)

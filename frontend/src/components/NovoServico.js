@@ -36,7 +36,8 @@ function NovoServico() {
         }
     }
 
-    const limpar = () => {
+    const limpar = (event) => {
+        event.preventDefault()
         setDescricao("")
         setDuracao("")
         setNome("")
@@ -46,7 +47,7 @@ function NovoServico() {
     return (
         <GerenciamentoServico visualizacao={false} botoes={[
             <Button cor="#6F917F" texto="Cadastrar" handleClick={cadastrar} corTexto="#FFFFFF" largura='100%'/>,
-            <Button tipo="reset" cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
+            <Button cor="#A5A5A5" texto="Limpar" handleClick={limpar} corTexto="#FFFFFF" largura='100%'/>
         ]} titulo="Produtos" estados={{nome, duracao, preco, descricao}} 
         setEstados={{setNome, setDuracao, setPreco, setDescricao}}
         subtitulo="Cadastro de Serviços" />

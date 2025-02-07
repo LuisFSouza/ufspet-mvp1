@@ -6,7 +6,7 @@ import Cabecalho from './Cabecalho';
 
 //placeholder, titulo, tipo, id, largura, dadosSelect
 
-function Acao({titulo, subtitulo, campos, botoes}) {
+function Acao({titulo, subtitulo, campos, botoes, considerView=false}) {
     return(
         <div className="container mt-4">
 
@@ -17,13 +17,25 @@ function Acao({titulo, subtitulo, campos, botoes}) {
 
                 <div className="card-body">
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-5">
                             <form>
-                                {campos.map((campo, index) => (
-                                    <div className='mt-2'><React.Fragment key={index}>{campo}</React.Fragment></div>
-                                ))}
+                                {campos.map((campo, index) => {
+                                    return (<div className='mt-2 row'>
+                                        {campo.buttonSupport
+                                        ? 
+                                        (<div class="col-12 ">
+                                        {campo.component}
+                                        </div>)
+                                        :
+                                        (<div class="col-9 mb-2">
+                                            {campo.component}
+                                        </div>)
+                                        }
+                                    </div>)
+                                        
+})}
                                 
-                                <div className="d-flex flex-row gap-5 mt-4 justify-content-between">
+                                <div className="col-9 d-flex flex-row gap-5 mt-3 justify-content-between">
                                     {botoes}
                                 </div>
                             </form>

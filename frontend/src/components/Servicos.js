@@ -8,6 +8,7 @@ import { IoIosAdd } from "react-icons/io";
 import Button from "./Button";
 import {useLocation, useNavigate} from 'react-router-dom'
 import Cabecalho from "./Cabecalho";
+import AvisoExclusao from "./AvisoExclusao";
 
 function Servicos (){
 
@@ -31,7 +32,7 @@ function Servicos (){
 
     useEffect(() => {
         axios.get('http://127.0.0.1:3344/servicos').then((resposta) => {
-            setDadosServicos(resposta.data)
+            setDadosServicos((resposta.data).map(({cod, nome, duracao,preco,descricao})=> ({cod, nome, duracao, preco: `R$ ${Number(preco).toFixed(2).replace('.', ',')}`, descricao})))
         }).catch((erro) => {
             if(erro.response){
                 setMessage({'tipo':'erro', 'mensagem': erro.response.data.message})
@@ -42,6 +43,40 @@ function Servicos (){
         })
     }, [])
 
+    const [mostrarDelete, setMostrarDelete] = useState(false)
+    const excluirServico = () => {
+        axios.delete(`http://127.0.0.1:3344/servicos/deletar/${serviceSelected}`).then((response) => {
+            setMostrarDelete(false)
+            setServiceSelected(-1)
+            setDadosServicos(dadosServicos.filter((dado) => dado.cod !== serviceSelected))
+            setMessage({'tipo': 'sucesso', 'mensagem': `Serviço ${response.data.cod} excluido com sucesso`})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        }).catch((erro) => {
+            setMessage({'tipo': 'erro', 'mensagem': erro.response.data.message})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        })
+    }
+    const buttonExcluirServico = () => {
+        if(serviceSelected !== -1){
+            setMostrarDelete(true)
+        }
+    }
+
+    const buttonEditarServico = () => {
+        if(serviceSelected !== -1){
+            navigate(`/servicos/editar/${serviceSelected}`)
+        }
+    }
 
     const location = useLocation()
     useEffect(() => {
@@ -67,20 +102,24 @@ function Servicos (){
             {message.mensagem}
           </div>): (<></>)}
 
-            <div className="container">
+          <div className={`container ${mostrarDelete ? 'pe-none' : 'pe-auto'}`}>
                 <div className="d-flex justify-content-between ">
                     <div>
                         <Cabecalho titulo="Serviços" subtitulo="Gerenciamento de Serviços" />
                     </div>
                     <div className="d-flex gap-3 align-items-center">
-                        <Button cor="#fe8a5f" texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
+                        <Button cor="#fe8a5f" handleClick={buttonExcluirServico} texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                         <Button cor="#6ab2b7" handleClick={buttonVisualizarServico} texto="Visualizar" tipo="button" icone={<MdOutlineRemoveRedEye fontSize={24} color="#ffffff"/> } corTexto="#ffffff" direcao="row" sombra={true} />
-                        <Button cor="#f9b461" texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true} />
+                        <Button cor="#f9b461" handleClick={buttonEditarServico}texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true} />
                         <Button cor="#70917f" handleClick={buttonNovoServico} texto="Novo" tipo="button" icone={<IoIosAdd fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                     </div>
                 </div>
                 <Table linetrade={changeServiceSelected} lineSelected={serviceSelected} cabecalhos={["Nome", "Duração",  "Preço", "Descrição"]} dados={dadosServicos}/>
             </div>
+            {mostrarDelete ? (
+            <div className="position-absolute top-50 start-50 translate-middle">
+            <AvisoExclusao entidade="servico" handleSubmit={excluirServico} handleCancel={() => setMostrarDelete(false)} />
+            </div>) : (<></>) }
         </div> 
 
     )

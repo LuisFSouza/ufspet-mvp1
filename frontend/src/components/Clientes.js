@@ -7,8 +7,9 @@ import { LuShoppingCart } from "react-icons/lu";
 import { GoPencil } from "react-icons/go";
 import { IoIosAdd } from "react-icons/io";
 import Button from "./Button";
-import {useLocation, useNavigate} from 'react-router-dom'
+import {useLocation, useNavigate, useParams} from 'react-router-dom'
 import Cabecalho from "./Cabecalho";
+import AvisoExclusao from "./AvisoExclusao";
 
 function Clientes (){
     const [clientSelected, setClientSelected] = useState(-1)
@@ -24,9 +25,51 @@ function Clientes (){
         navigate('/clientes/novo')
     }
 
+    const [mostrarDelete, setMostrarDelete] = useState(false)
+    const excluirCliente = () => {
+        axios.delete(`http://127.0.0.1:3344/clientes/deletar/${clientSelected}`).then((response) => {
+            setMostrarDelete(false)
+            setClientSelected(-1)
+            setDadosClientes(dadosClientes.filter((dado) => dado.cod !== clientSelected))
+            setMessage({'tipo': 'sucesso', 'mensagem': `Cliente ${response.data.cod} excluido com sucesso`})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        }).catch((erro) => {
+            setMessage({'tipo': 'erro', 'mensagem': erro.response.data.message})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        })
+    }
+
+    const buttonExcluirCliente = () => {
+        if(clientSelected !== -1){
+            setMostrarDelete(true)
+        }
+    }
+
     const buttonVisualizarCliente = () => {
         if(clientSelected !== -1){
             navigate(`/clientes/${clientSelected}`)
+        }
+    }
+
+    const buttonEditarCliente = () => {
+        if(clientSelected !== -1){
+            navigate(`/clientes/editar/${clientSelected}`)
+        }
+    }
+
+    const buttonCompras = () => {
+        if(clientSelected !== -1){
+            navigate(`/clientes/${clientSelected}/compras`)
         }
     }
 
@@ -67,21 +110,25 @@ function Clientes (){
             {message.mensagem}
           </div>): (<></>)}
 
-            <div className="container">
+          <div className={`container ${mostrarDelete ? 'pe-none' : 'pe-auto'}`}>
                 <div className="d-flex justify-content-between ">
                     <div>
                         <Cabecalho titulo="Clientes" subtitulo="Gerenciamento de Clientes" />
                     </div>
                     <div className="d-flex gap-3 align-items-center">
-                        <Button cor="#7E79FF" texto="Compras" tipo="button" icone={<LuShoppingCart fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
-                        <Button cor="#fe8a5f" texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
+                        <Button handleClick={buttonCompras} cor="#7E79FF" texto="Compras" tipo="button" icone={<LuShoppingCart fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
+                        <Button cor="#fe8a5f" handleClick={buttonExcluirCliente} texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                         <Button cor="#6ab2b7" handleClick={buttonVisualizarCliente} texto="Visualizar" tipo="button" icone={<MdOutlineRemoveRedEye fontSize={24} color="#ffffff"/> } corTexto="#ffffff" direcao="row" sombra={true}/>
-                        <Button cor="#f9b461" texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
+                        <Button cor="#f9b461" handleClick={buttonEditarCliente} texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                         <Button cor="#70917f" handleClick={buttonNovoCliente} texto="Novo" tipo="button" icone={<IoIosAdd fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                     </div>
                 </div>
                 <Table linetrade={changeClientSelected} lineSelected={clientSelected} cabecalhos={["Cliente", "CPF",  "Email", "Telefone", "Endereço"]} dados={dadosClientes}/>
             </div>
+            {mostrarDelete ? (
+            <div className="position-absolute top-50 start-50 translate-middle">
+            <AvisoExclusao entidade="cliente" handleSubmit={excluirCliente} handleCancel={() => setMostrarDelete(false)} />
+            </div>) : (<></>) }
         </div> 
 
     )

@@ -1,17 +1,18 @@
 import { InputMask } from '@react-input/mask'
 import './TextField.css'
 
-function TextField({mask, placeholder, replacement, titulo, tipo, id, largura, dadosSelect, step, setValue, value, visualizacao, required=true, pattern='.*'}) {
+function TextField({mask, placeholder, replacement, titulo, tipo, id, largura, dadosSelect, step, setValue=null, value, visualizacao, required=true, pattern='.*'}) {
     const digitou = (event) => {
         setValue(event.target.value)
     }
 
+
     return (    
-        <div className="d-flex flex-column mb-3" style={{width: largura, fontSize: '18px', fontWeight: 'bold'}}>
+        <div className="d-flex flex-column w-100" style={{width: largura, fontSize: '18px', fontWeight: 'bold'}}>
             <label style={{color: '#667085'}}htmlFor={id}>{titulo}</label>
             {tipo === 'select' ? (
-                <select className="rounded-1 border-1" id={id} readOnly={visualizacao}>
-                <option value=""  className="placeHolderColor" disabled selected>{placeholder}</option>
+                <select className=" border-1 rounded-3 form-select text-black mt-1" id={id} disabled={visualizacao} required={required} value={value || ""} onChange={digitou}>
+                <option value=""  className="placeHolderColor" disabled>{placeholder}</option>
                 {dadosSelect.map((dado, index) => {
                     var selectValue = []
                     {Object.values(dado).map((valor) => {

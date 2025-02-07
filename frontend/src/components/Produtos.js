@@ -9,6 +9,7 @@ import Button from "./Button";
 import {useLocation, useNavigate} from 'react-router-dom'
 import './Produtos.css'
 import Cabecalho from "./Cabecalho";
+import AvisoExclusao from "./AvisoExclusao";
 
 
 function Produtos() {
@@ -30,9 +31,45 @@ function Produtos() {
         }
     }
 
+    const buttonEditarProduto = () => {
+        if(productSelected !== -1){
+            navigate(`/produtos/editar/${productSelected}`)
+        }
+    }
+
+    const [mostrarDelete, setMostrarDelete] = useState(false)
+    const excluirProduto = () => {
+        axios.delete(`http://127.0.0.1:3344/produtos/deletar/${productSelected}`).then((response) => {
+            setMostrarDelete(false)
+            setProductSelected(-1)
+            setDadosProdutos(dadosProdutos.filter((dado) => dado.cod !== productSelected))
+            setMessage({'tipo': 'sucesso', 'mensagem': `Produto ${response.data.cod} excluido com sucesso`})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        }).catch((erro) => {
+            setMessage({'tipo': 'erro', 'mensagem': erro.response.data.message})
+            
+            const timer = setTimeout(() => {
+                setMessage(null)
+            }, 10000);
+    
+            return () => clearTimeout(timer)
+        })
+    }
+
+    const buttonExcluirProduto = () => {
+        if(productSelected !== -1){
+            setMostrarDelete(true)
+        }
+    }
+
     useEffect(() => {
         axios.get('http://127.0.0.1:3344/produtos').then((resposta) => {
-            setDadosProdutos(resposta.data)
+            setDadosProdutos((resposta.data).map(({cod, nome, marca,preco,quantidade, fornecedor})=> ({cod, nome, marca, preco: `R$ ${Number(preco).toFixed(2).replace('.', ',')}`, quantidade, fornecedor})))
         }).catch((erro) => {
             if(erro.response){
                 setMessage({'tipo':'erro', 'mensagem': erro.response.data.message})
@@ -65,20 +102,24 @@ function Produtos() {
             {message.mensagem}
           </div>): (<></>)}
 
-            <div className="container">
+          <div className={`container ${mostrarDelete ? 'pe-none' : 'pe-auto'}`}>
                 <div className="d-flex justify-content-between ">
                     <div>
                         <Cabecalho titulo="Produtos" subtitulo="Gerenciamento de produtos" />
                     </div>
                     <div className="d-flex gap-3 align-items-center">
-                        <Button cor="#fe8a5f" texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
+                        <Button cor="#fe8a5f" handleClick={buttonExcluirProduto} texto="Excluir" tipo="button" icone={<IoCloseSharp fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true}/>
                         <Button cor="#6ab2b7" handleClick={buttonVisualizarClick} texto="Visualizar" tipo="button" icone={<MdOutlineRemoveRedEye fontSize={24} color="#ffffff"/> } corTexto="#ffffff" direcao="row" sombra={true} />
-                        <Button cor="#f9b461" texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true} />
+                        <Button cor="#f9b461" handleClick={buttonEditarProduto} texto="Editar" tipo="button" icone={<GoPencil fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true} />
                         <Button cor="#70917f" handleClick={buttonNovoClick} texto="Novo" tipo="button" icone={<IoIosAdd fontSize={24} color="#ffffff"/>} corTexto="#ffffff" direcao="row" sombra={true} />
                     </div>
                 </div>
                 <Table linetrade={changeProductSelected} lineSelected={productSelected} cabecalhos={["Produto", "Marca",  "Preço", "Quantidade", "Fornecedor"]} dados={dadosProdutos}/>
             </div>
+            {mostrarDelete ? (
+            <div className="position-absolute top-50 start-50 translate-middle">
+            <AvisoExclusao entidade="produto" handleSubmit={excluirProduto} handleCancel={() => setMostrarDelete(false)} />
+            </div>) : (<></>) }
         </div>  
     )
 }

@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateServiceDto } from 'src/dto/createServiceDto';
-import { PrismaService } from 'src/Prisma/prisma.service';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaService } from '../Prisma/prisma.service';
+import { CreateServiceDto } from '../dto/createServiceDto';
+import { UpdateServiceDto } from '../dto/updateServiceDto';
 
 @Injectable()
 export class ServicosService {
@@ -14,9 +16,9 @@ export class ServicosService {
         }
     }
 
-    async readService(id:number){
+    async readService(id:number, tx : Prisma.TransactionClient | PrismaClient = this.prisma){
         try{
-            const servico =  await this.prisma.servicos.findUnique({
+            const servico =  await tx.servicos.findUnique({
                 where:{
                     cod:id
                 }
@@ -49,5 +51,54 @@ export class ServicosService {
             }
             throw new HttpException('Ocorreu um erro ao cadastrar o serviço', HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
+
+    async updateService(id:number, service: UpdateServiceDto){
+        try{
+            return await this.prisma.$transaction(async (tx) => {
+                const servico = await this.readService(id, tx)
+                if(servico){
+                    return tx.servicos.update({
+                        where:{cod:id},
+                        data: service
+                    })
+                }
+                else{
+                    throw new HttpException('O serviço não foi encontrado', HttpStatus.NOT_FOUND)
+                }
+            })
+        }
+        catch(error){
+            if(error instanceof HttpException){throw error}
+            if(error.code === 'P2002'){
+                const camposErro = error.meta.target;
+                if(camposErro.includes('nome')){
+                    throw new HttpException('Já existe um serviço com este nome', HttpStatus.CONFLICT)
+                }
+            }
+            throw new HttpException('Ocorreu um erro ao editar o serviço', HttpStatus.INTERNAL_SERVER_ERROR)
+        }  
+    }
+
+    async deleteService(id:number){
+        try{
+            return await this.prisma.$transaction(async (tx) => {
+                const servico = await this.readService(id, tx)
+                if(servico){
+                    return tx.servicos.delete({
+                        where: {
+                            cod: id
+                        }
+                    })
+                }
+                else{
+                    throw new HttpException('O serviço não foi encontrado', HttpStatus.NOT_FOUND)
+                }
+            })
+        }
+        catch(error){
+            if(error instanceof HttpException){throw error}
+            throw new HttpException('Ocorreu um erro ao excluir o serviço', HttpStatus.INTERNAL_SERVER_ERROR)
+        }  
     }
 }

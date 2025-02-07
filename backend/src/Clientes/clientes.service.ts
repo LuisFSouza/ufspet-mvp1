@@ -1,10 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateClientDto } from 'src/dto/createClientDto';
-import { PrismaService } from 'src/Prisma/prisma.service';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaService } from '../Prisma/prisma.service';
+import { CreateClientDto } from '../dto/createClientDto';
+import { UpdateClientDto } from '../dto/updateClientDto';
+import { AgendamentosService } from '../Agendamentos/agendamentos.service';
+import { VendasService } from '../Vendas/vendas.service';
 
 @Injectable()
 export class ClientesService {
-    constructor(private prisma:PrismaService){}
+    constructor(private prisma:PrismaService,
+        @Inject(forwardRef(() => AgendamentosService))
+        private readonly agendamentoService: AgendamentosService,
+        @Inject(forwardRef(() => VendasService))
+        private readonly vendasService: VendasService
+    ){}
 
     async readClients(){
         try{
@@ -15,9 +24,9 @@ export class ClientesService {
         }
     }
 
-    async readClient(id:number){
+    async readClient(id:number,  tx : Prisma.TransactionClient | PrismaClient = this.prisma){
         try{
-            const cliente = await this.prisma.clientes.findUnique({
+            const cliente = await tx.clientes.findUnique({
                 where:{
                     cod:id
                 }
@@ -27,7 +36,6 @@ export class ClientesService {
                 return cliente;
             }
             else{
-                console.log("Entrou aqui")
                 throw new HttpException('O cliente não foi encontrado', HttpStatus.NOT_FOUND)
             }
         }
@@ -55,5 +63,79 @@ export class ClientesService {
             }
             throw new HttpException('Ocorreu um erro ao cadastrar o cliente', HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
+
+    async updateClient(id:number, cliente: UpdateClientDto){
+        try{
+            return await this.prisma.$transaction(async (tx) => {
+                const clienteSelect = await this.readClient(id, tx)
+                if(clienteSelect){
+                    return await tx.clientes.update({
+                        where:{cod:id},
+                        data: cliente
+                    })
+                }
+                else{
+                    throw new HttpException('O cliente não foi encontrado', HttpStatus.NOT_FOUND)
+                }
+            })
+        }
+        catch(error){
+            if(error instanceof HttpException){throw error}
+            if(error.code === 'P2002'){
+                const camposErro = error.meta.target;
+                if(camposErro.includes('cpf')){
+                    throw new HttpException('Já existe um cliente com este CPF', HttpStatus.CONFLICT)
+                }
+                if(camposErro.includes('email')){
+                    throw new HttpException('Já existe um cliente com este email', HttpStatus.CONFLICT)
+                }
+            }
+            throw new HttpException('Ocorreu um erro ao editar o cliente', HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async deleteClient(id:number){
+        try{
+            return await this.prisma.$transaction(async (tx) => {
+                const cliente = await this.readClient(id, tx)
+                if(cliente){
+                    return await tx.clientes.delete({
+                        where: {
+                            cod: id
+                        }
+                    })
+                }
+                else{
+                    throw new HttpException('O cliente não foi encontrado', HttpStatus.NOT_FOUND)
+                }
+            })
+        }
+        catch(error){
+            if(error instanceof HttpException){throw error}
+            throw new HttpException('Ocorreu um erro ao excluir o cliente', HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async readSaleAndAppointmentsByClient(client: number){
+        return await this.prisma.$transaction(async (tx) => {
+    
+            const vendas = await this.vendasService.readSaleByClient(client, tx)
+            const agendamentos = await this.agendamentoService.readAppointmentByClient(client, tx)
+    
+            var vendasAgendamentos = [];
+            var contador = 1;
+            vendas.forEach(venda => {
+                vendasAgendamentos.push({cod: contador, cod_op: venda.cod, formaPgto: venda.formaPgto, total: venda.totalVenda, data: venda.data, tipo: 'Venda'})
+                contador ++;
+            });
+
+            agendamentos.forEach(agendamento => {
+                vendasAgendamentos.push({cod: contador, cod_op: agendamento.cod, formaPgto: agendamento.formaPgto, total: Number(agendamento.servico.preco), data: agendamento.data, tipo: 'Agendamento'})
+                contador ++;
+            });
+
+            return vendasAgendamentos;
+        })
     }
 }
