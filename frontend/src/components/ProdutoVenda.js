@@ -48,6 +48,7 @@ function ProdutoVenda({mostrarbotoes = true, onchangeproduct, onchangequantity, 
                     console.log("PASSOU TUDO")
                     if(itemValido){
                         onadd(id);
+                        setErro("")
                     }
                 }
             }
