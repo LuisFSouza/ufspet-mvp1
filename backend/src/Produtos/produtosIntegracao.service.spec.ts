@@ -39,15 +39,14 @@ const fakeProducts = [
     }
 ]
 
-
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     produtos: {
-        create: jest.fn().mockReturnValue(fakeProducts[0]),
-        findMany: jest.fn().mockReturnValue(fakeProducts),
-        findUnique: jest.fn().mockReturnValue(fakeProducts[0]),
-        update: jest.fn().mockReturnValue(fakeProducts[0]),
-        delete: jest.fn().mockReturnValue(fakeProducts[0]),
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0]))
     }
 }
 
@@ -86,7 +85,7 @@ describe('Integração - Serviço de Produtos', () => {
     })
 
     it('Atualiza um produto específico (não existente)', async()=>{
-        prismaMock.produtos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.produtos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readProductSpy = jest.spyOn(service, 'readProduct')
         await expect(service.updateProduct(10, fakeProductInsertUpdate)).rejects.toThrow(HttpException)
         expect(readProductSpy).toHaveBeenCalledTimes(1);
@@ -110,7 +109,7 @@ describe('Integração - Serviço de Produtos', () => {
     })
 
     it('Deleta um produto específico (não existente)', async()=>{
-        prismaMock.produtos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.produtos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readProductSpy = jest.spyOn(service, 'readProduct')
         await expect(service.deleteProduct(10)).rejects.toThrow(HttpException)
         expect(readProductSpy).toHaveBeenCalledTimes(1);
@@ -118,7 +117,6 @@ describe('Integração - Serviço de Produtos', () => {
             $transaction: expect.any(Function)
         }));
     })
-
 })
 /*https://dev.to/mrtinsvitor/testes-com-nestjs-e-prisma-24bo*/
 

@@ -38,11 +38,11 @@ const fakeServices = [
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     servicos: {
-        create: jest.fn().mockReturnValue(fakeServices[0]),
-        findMany: jest.fn().mockReturnValue(fakeServices),
-        findUnique: jest.fn().mockReturnValue(fakeServices[0]),
-        update: jest.fn().mockReturnValue(fakeServices[0]),
-        delete: jest.fn().mockReturnValue(fakeServices[0]),
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeServices)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0]))
     }
 }
 
@@ -108,7 +108,7 @@ describe('Serviço de Serviços', () => {
     })
 
     it('Retorna um serviço específico (não existente)', async()=>{
-        prismaMock.servicos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.servicos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         await expect(service.readService(10)).rejects.toThrow(HttpException)
         expect(prisma.servicos.findUnique).toHaveBeenCalledTimes(1);
         expect(prisma.servicos.findUnique).toHaveBeenCalledWith({
@@ -118,7 +118,7 @@ describe('Serviço de Serviços', () => {
     })
 
     it('Atualiza um serviço específico', async()=>{
-        const readServiceSpy = jest.spyOn(service, 'readService').mockResolvedValue(fakeServices[0])
+        const readServiceSpy = jest.spyOn(service, 'readService').mockImplementationOnce(() => Promise.resolve(fakeServices[0]))
         const resposta = await service.updateService(1, fakeServiceCreateUpdate);
         expect(resposta).toEqual(fakeServices[0]);
         expect(readServiceSpy).toHaveBeenCalledTimes(1);
@@ -139,7 +139,7 @@ describe('Serviço de Serviços', () => {
                 target:['nome']
             }
         })
-        const readServiceSpy = jest.spyOn(service, 'readService').mockResolvedValue(fakeServices[0])
+        const readServiceSpy = jest.spyOn(service, 'readService').mockImplementationOnce(() => Promise.resolve(fakeServices[0]))
         await expect(service.updateService(1, fakeServiceCreateUpdate)).rejects.toThrow(HttpException)
         expect(readServiceSpy).toHaveBeenCalledTimes(1);
         expect(readServiceSpy).toHaveBeenCalledWith(1, expect.objectContaining({
@@ -164,7 +164,7 @@ describe('Serviço de Serviços', () => {
     })
 
     it('Deleta um serviço específico', async()=>{
-        const readServiceSpy = jest.spyOn(service, 'readService').mockResolvedValue(fakeServices[0])
+        const readServiceSpy = jest.spyOn(service, 'readService').mockImplementationOnce(() => Promise.resolve(fakeServices[0]))
         const resposta = await service.deleteService(1);
         expect(resposta).toEqual(fakeServices[0]);
         expect(readServiceSpy).toHaveBeenCalledTimes(1);

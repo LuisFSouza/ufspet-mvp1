@@ -119,28 +119,30 @@ const fakeAgendamentos = [
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     agendamentos: {
-        create: jest.fn().mockReturnValue(fakeAgendamentos[0]),
-        findMany: jest.fn().mockReturnValue(fakeAgendamentosSelect),
-        findUnique: jest.fn().mockReturnValue(fakeAgendamentosSelect[0]),
-        update: jest.fn().mockReturnValue(fakeAgendamentos[0]),
-        delete: jest.fn().mockReturnValue(fakeAgendamentos[0])
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeAgendamentos[0])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeAgendamentosSelect)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeAgendamentosSelect[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeAgendamentos[0])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeAgendamentos[0]))
     },
     clientes: {
-        findUnique: jest.fn().mockReturnValue({ cod: 1,
+        findUnique:jest.fn().mockImplementation(() => Promise.resolve({
+            cod: 1,
             nome: 'Cliente 1',
             cpf: '12345678909',
             email: 'cliente1@gmail.com',
             telefone: '19123456789',
-            endereco: 'Rua cliente 1',})
+            endereco: 'Rua cliente 1'
+        }))
     },
     servicos: {
-        findUnique: jest.fn().mockReturnValue({
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve({
                 cod: 1,
                 nome: 'Nome 1',
                 duracao: 30,
                 preco: new Decimal(12.99),
                 descricao: 'Descrição 1',
-        })
+        }))
     }
 }
 
@@ -201,7 +203,7 @@ describe('Integração - Serviço de Agendamentos', () => {
     })
 
     it('Atualiza um agendamento específico (não existente)', async()=>{
-        prismaMock.agendamentos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.agendamentos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         
         const readAppointmentSpy = jest.spyOn(service, 'readAppointment')
         const readService = jest.spyOn(servicoService, 'readService')
@@ -252,8 +254,6 @@ describe('Integração - Serviço de Agendamentos', () => {
         }));
     })
 
-
-
     it('Deleta um agendamento específico', async()=>{
         const readAppointmentSpy = jest.spyOn(service, 'readAppointment')
         const resposta = await service.deleteAppointment(1);
@@ -269,9 +269,8 @@ describe('Integração - Serviço de Agendamentos', () => {
     })
 
     it('Deleta um agendamento específico (não existente)', async()=>{
-        prismaMock.agendamentos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.agendamentos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readAppointmentSpy = jest.spyOn(service, 'readAppointment')
-        prismaMock.agendamentos.findUnique.mockResolvedValueOnce(null)
         await expect(service.deleteAppointment(10)).rejects.toThrow(HttpException)
         expect(readAppointmentSpy).toHaveBeenCalledTimes(1);
         expect(readAppointmentSpy).toHaveBeenCalledWith(10, expect.objectContaining({
@@ -284,7 +283,7 @@ describe('Integração - Serviço de Agendamentos', () => {
         const readAppointmentSpy = jest.spyOn(service, 'readAppointment')
         const readService = jest.spyOn(servicoService, 'readService')
         const readClient = jest.spyOn(clienteService, 'readClient')
-        prismaMock.servicos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.servicos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         await expect(service.updateAppointment(1, fakeAgendamentoCreateUpdate)).rejects.toThrow(HttpException)
         expect(readAppointmentSpy).toHaveBeenCalledTimes(0);
         expect(readService).toHaveBeenCalledTimes(1);
@@ -302,7 +301,7 @@ describe('Integração - Serviço de Agendamentos', () => {
         const readAppointmentSpy = jest.spyOn(service, 'readAppointment')
         const readService = jest.spyOn(servicoService, 'readService')
         const readClient = jest.spyOn(clienteService, 'readClient')
-        prismaMock.clientes.findUnique.mockResolvedValueOnce(null)
+        prismaMock.clientes.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         await expect(service.updateAppointment(1, fakeAgendamentoCreateUpdate)).rejects.toThrow(HttpException)
         expect(readAppointmentSpy).toHaveBeenCalledTimes(0);
         expect(readService).toHaveBeenCalledTimes(0);

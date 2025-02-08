@@ -38,11 +38,11 @@ const fakeServices = [
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     servicos: {
-        create: jest.fn().mockReturnValue(fakeServices[0]),
-        findMany: jest.fn().mockReturnValue(fakeServices),
-        findUnique: jest.fn().mockReturnValue(fakeServices[0]),
-        update: jest.fn().mockReturnValue(fakeServices[0]),
-        delete: jest.fn().mockReturnValue(fakeServices[0]),
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeServices)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeServices[0]))
     }
 }
 
@@ -102,7 +102,7 @@ describe('Integração - Serviço de Serviços', () => {
     })
 
     it('Atualiza um serviço específico (não existente)', async()=>{
-        prismaMock.servicos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.servicos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readServiceSpy = jest.spyOn(service, 'readService')
         await expect(service.updateService(10, prismaMock[2])).rejects.toThrow(HttpException)
         expect(readServiceSpy).toHaveBeenCalledTimes(1);
@@ -126,7 +126,7 @@ describe('Integração - Serviço de Serviços', () => {
     })
 
     it('Deleta um serviço específico (não existente)', async()=>{
-        prismaMock.servicos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.servicos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readServiceSpy = jest.spyOn(service, 'readService')
         await expect(service.deleteService(10)).rejects.toThrow(HttpException)
         expect(readServiceSpy).toHaveBeenCalledTimes(1);

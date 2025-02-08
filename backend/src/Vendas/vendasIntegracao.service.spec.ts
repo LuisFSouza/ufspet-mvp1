@@ -314,25 +314,25 @@ const fakeVendas = [
 ]
 
 const produtosMock = {
-    readProduct: jest.fn().mockReturnValue(null)
+    readProduct:  jest.fn().mockImplementation(() => Promise.resolve(null))
 }
 
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     vendas: {
-        create: jest.fn().mockReturnValue(fakeVendas[2]),
-        findMany: jest.fn().mockReturnValue(fakeVendasSelectMany),
-        findUnique: jest.fn().mockReturnValue(fakeVendasSelectUnique[0]),
-        update: jest.fn().mockReturnValue(fakeVendas[2]),
-        delete: jest.fn().mockReturnValue(fakeVendas[0]),
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeVendas[2])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeVendasSelectMany)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeVendasSelectUnique[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeVendas[2])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeVendas[0]))
     },
     itensVenda:{
-        createMany: jest.fn().mockReturnValue(null), //Colocar dados
-        findMany: jest.fn().mockReturnValue(null),
-        deleteMany: jest.fn().mockReturnValue(null)
+        createMany: jest.fn().mockImplementation(() => Promise.resolve(null)), //Colocar dados
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(null)),
+        deleteMany: jest.fn().mockImplementation(() => Promise.resolve(null))
     },
     produtos: {
-        findMany: jest.fn().mockReturnValue([
+        findMany: jest.fn().mockImplementation(() => Promise.resolve([
             {
                 cod: 1,
                 nome: 'Produto 1',
@@ -351,16 +351,16 @@ const prismaMock = {
                 preco: new Decimal(50.35),
                 quantidade: 78,
             }
-        ]),
-        update: jest.fn().mockReturnValue(null)
+        ])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(null))
     },
     clientes: {
-        findUnique: jest.fn().mockReturnValue({ cod: 1,
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve({ cod: 1,
             nome: 'Cliente 1',
             cpf: '12345678909',
             email: 'cliente1@gmail.com',
             telefone: '19123456789',
-            endereco: 'Rua cliente 1',})
+            endereco: 'Rua cliente 1',}))
     },
 }
 
@@ -555,7 +555,7 @@ describe('Integração - Serviço de Vendas', () => {
     })
     
     it('Criar uma venda (deixando itens com pouco estoque)', async()=>{
-        prismaMock.produtos.findMany.mockReturnValueOnce([
+        prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
             {
                 cod: 1,
                 nome: 'Produto 1',
@@ -574,8 +574,8 @@ describe('Integração - Serviço de Vendas', () => {
                 preco: new Decimal(50.35),
                 quantidade: 78,
             }
-        ])
-        
+        ]))
+
         produtosMock.readProduct.mockImplementationOnce(() => Promise.resolve({
             cod: 1,
             nome: 'Produto 1',
@@ -737,7 +737,6 @@ describe('Integração - Serviço de Vendas', () => {
         }));
     })
     
-
     it('Criar uma venda (com itens repetidos)', async()=>{
 
         //Spys
@@ -792,12 +791,12 @@ describe('Integração - Serviço de Vendas', () => {
         ]))
 
         //Dado retornado pela criação da venda 
-        prismaMock.vendas.create.mockResolvedValueOnce({
-                    cod: 3,
-                    cliente_id: 3,
-                    data: new Date('2025-01-01 05:30:30'),
-                    formaPgto: 'PIX' as FormasPagamento ,
-        })
+        prismaMock.vendas.create.mockImplementationOnce(() => Promise.resolve({
+            cod: 3,
+            cliente_id: 3,
+            data: new Date('2025-01-01 05:30:30'),
+            formaPgto: 'PIX' as FormasPagamento ,
+        }))
        
         // Retorno dos updates 
         prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
@@ -942,8 +941,7 @@ describe('Integração - Serviço de Vendas', () => {
         }))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Dados buscados dos itens
         prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
@@ -1049,8 +1047,7 @@ describe('Integração - Serviço de Vendas', () => {
         }))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Dados buscados dos itens
         prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
@@ -1143,7 +1140,7 @@ describe('Integração - Serviço de Vendas', () => {
     
 
     it('Criar uma venda (com cliente inexistente)', async()=>{
-        prismaMock.clientes.findUnique.mockResolvedValueOnce(null)
+        prismaMock.clientes.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
@@ -1163,14 +1160,15 @@ describe('Integração - Serviço de Vendas', () => {
 
     it('Atualizar uma venda', async()=>{
         /*Atualiza para todos abaixo*/ 
-        prismaMock.clientes.findUnique.mockReturnValue( {
+        prismaMock.clientes.findUnique.mockImplementation(() => Promise.resolve({
             cod: 2,
             nome: 'Cliente 2',
             cpf: '99999999999',
             email: 'cliente2@gmail.com',
             telefone: '19999999999',
             endereco: 'Rua cliente 2',
-        })
+        }))
+
 
         produtosMock.readProduct.mockImplementationOnce(() => Promise.resolve({
             cod: 1,
@@ -1245,14 +1243,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -1298,8 +1295,7 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
-
+        }))
 
         //Dados buscados dos itens
         prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
@@ -1324,14 +1320,12 @@ describe('Integração - Serviço de Vendas', () => {
         ]))
         
         //Retorno do update na tabela venda 
-        prismaMock.vendas.update.mockResolvedValueOnce(
-            {
-                cod: 3,
-                cliente_id: 2,
-                data: new Date('2025-01-01 05:30:30'),
-                formaPgto: 'PIX' as FormasPagamento ,
-            }
-        )
+        prismaMock.vendas.update.mockImplementationOnce(() => Promise.resolve({
+            cod: 3,
+            cliente_id: 2,
+            data: new Date('2025-01-01 05:30:30'),
+            formaPgto: 'PIX' as FormasPagamento ,
+        }))
 
         const resposta = await service.updateSale(3, {
             cliente_id: 2,
@@ -1493,7 +1487,7 @@ describe('Integração - Serviço de Vendas', () => {
     })
 
     
-    it('Atualizar uma venda (deixando item com pouco estoque', async()=>{
+    it('Atualizar uma venda (deixando item com pouco estoque)', async()=>{
         produtosMock.readProduct.mockImplementationOnce(() => Promise.resolve({
             cod: 1,
             nome: 'Produto 1',
@@ -1567,14 +1561,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -1620,7 +1613,7 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
+        }))
 
 
         //Dados buscados dos itens
@@ -1646,14 +1639,12 @@ describe('Integração - Serviço de Vendas', () => {
         ]))
         
         //Retorno do update na tabela venda 
-        prismaMock.vendas.update.mockResolvedValueOnce(
-            {
-                cod: 3,
-                cliente_id: 2,
-                data: new Date('2025-01-01 05:30:30'),
-                formaPgto: 'PIX' as FormasPagamento ,
-            }
-        )
+        prismaMock.vendas.update.mockImplementationOnce(() => Promise.resolve( {
+            cod: 3,
+            cliente_id: 2,
+            data: new Date('2025-01-01 05:30:30'),
+            formaPgto: 'PIX' as FormasPagamento ,
+        }))
 
         const resposta = await service.updateSale(3, {
             cliente_id: 2,
@@ -1868,14 +1859,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -1921,18 +1911,15 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
-
+        }))
        
         //Retorno do update na tabela venda 
-        prismaMock.vendas.update.mockResolvedValueOnce(
-            {
-                cod: 3,
-                cliente_id: 2,
-                data: new Date('2025-01-01 05:30:30'),
-                formaPgto: 'PIX' as FormasPagamento ,
-            }
-        )
+        prismaMock.vendas.update.mockImplementationOnce(() => Promise.resolve( {
+            cod: 3,
+            cliente_id: 2,
+            data: new Date('2025-01-01 05:30:30'),
+            formaPgto: 'PIX' as FormasPagamento ,
+        }))
 
         const resposta = await service.updateSale(3, {
             cliente_id: 2,
@@ -2138,14 +2125,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update 
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -2191,8 +2177,7 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
-
+        }))
 
 
         //Dados buscados dos itens
@@ -2464,14 +2449,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update 
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -2517,7 +2501,7 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
+        }))
 
 
         //Dados buscados dos itens
@@ -2744,14 +2728,13 @@ describe('Integração - Serviço de Vendas', () => {
         ))
 
         //Dados retornados pelo update
-        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve({
-        }))
+        prismaMock.produtos.update.mockImplementationOnce (() => Promise.resolve(null))
 
         //Spys
         const readClient = jest.spyOn(clienteService, 'readClient')
         const updateProductSpy = jest.spyOn(produtoService, 'updateProduct');
         const readManyProductsSpy = jest.spyOn(produtoService, 'readManyProducts')
-        const readSaleSpy = jest.spyOn(service, 'readSale').mockResolvedValue({
+        const readSaleSpy = jest.spyOn(service, 'readSale').mockImplementationOnce(() => Promise.resolve({
             cod: 3,
             cliente_id: 3,
             data: new Date('2025-01-01 05:30:30'),
@@ -2797,8 +2780,7 @@ describe('Integração - Serviço de Vendas', () => {
                 telefone: '19123456789',
                 endereco: 'Rua cliente 3',
             }
-        })
-
+        }))
 
         //Dados buscados dos itens
         prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
@@ -2976,7 +2958,7 @@ describe('Integração - Serviço de Vendas', () => {
     })
 
     it('Deleta uma venda específica (não existente)', async()=>{
-        prismaMock.vendas.findUnique.mockResolvedValueOnce(null)
+        prismaMock.vendas.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         const readSaleSpy = jest.spyOn(service, 'readSale')
         await expect(service.deleteSale(10)).rejects.toThrow(HttpException)
         expect(readSaleSpy).toHaveBeenCalledTimes(1);
@@ -2987,7 +2969,7 @@ describe('Integração - Serviço de Vendas', () => {
 
     
     it('Atualizar uma venda (com cliente inexistente)', async()=>{
-        prismaMock.clientes.findUnique.mockResolvedValueOnce(null)
+        prismaMock.clientes.findUnique.mockImplementationOnce(() => Promise.resolve(null))
     
 
         //Spys

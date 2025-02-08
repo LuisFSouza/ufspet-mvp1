@@ -108,7 +108,7 @@ export class ProdutosService{
             return await this.prisma.$transaction(async (tx) => {
                 const produto = await this.readProduct(id, tx)
                 if(produto){
-                    return tx.produtos.delete({
+                    return await tx.produtos.delete({
                         where: {
                             cod: id
                         }

@@ -43,11 +43,11 @@ const fakeProducts = [
 const prismaMock = {
     $transaction: jest.fn(async (callback) => callback(prismaMock)),
     produtos: {
-        create: jest.fn().mockReturnValue(fakeProducts[0]),
-        findMany: jest.fn().mockReturnValue(fakeProducts),
-        findUnique: jest.fn().mockReturnValue(fakeProducts[0]),
-        update: jest.fn().mockReturnValue(fakeProducts[0]),
-        delete: jest.fn().mockReturnValue(fakeProducts[0]),
+        create: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        findMany: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts)),
+        findUnique: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        update: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0])),
+        delete: jest.fn().mockImplementation(() => Promise.resolve(fakeProducts[0]))
     }
 }
 
@@ -96,7 +96,7 @@ describe('Serviço de Produtos', () => {
     })
 
     it('Retorna um produto específico (não existente)', async()=>{
-        prismaMock.produtos.findUnique.mockResolvedValueOnce(null)
+        prismaMock.produtos.findUnique.mockImplementationOnce(() => Promise.resolve(null))
         await expect(service.readProduct(10)).rejects.toThrow(HttpException)
         expect(prisma.produtos.findUnique).toHaveBeenCalledTimes(1);
         expect(prisma.produtos.findUnique).toHaveBeenCalledWith({
@@ -105,7 +105,7 @@ describe('Serviço de Produtos', () => {
     })
 
     it('Atualiza um produto específico', async()=>{
-        const readProductSpy = jest.spyOn(service, 'readProduct').mockResolvedValue(fakeProducts[0])
+        const readProductSpy = jest.spyOn(service, 'readProduct').mockImplementationOnce(() => Promise.resolve(fakeProducts[0]))
         const resposta = await service.updateProduct(1, fakeProductInsertUpdate);
         expect(resposta).toEqual(fakeProducts[0]);
         expect(readProductSpy).toHaveBeenCalledTimes(1);
@@ -121,7 +121,7 @@ describe('Serviço de Produtos', () => {
 
     it('Atualiza um produto específico (não existente)', async()=>{
         const readProductSpy = jest.spyOn(service, 'readProduct').mockRejectedValueOnce(
-            new HttpException('O produto não foi encontrada', HttpStatus.NOT_FOUND)
+            new HttpException('O produto não foi encontrado', HttpStatus.NOT_FOUND)
         )
         await expect(service.updateProduct(10, fakeProductInsertUpdate)).rejects.toThrow(HttpException)
         expect(readProductSpy).toHaveBeenCalledTimes(1);
@@ -131,7 +131,7 @@ describe('Serviço de Produtos', () => {
     })
 
     it('Deleta um produto específico', async()=>{
-        const readProductSpy = jest.spyOn(service, 'readProduct').mockResolvedValue(fakeProducts[0])
+        const readProductSpy = jest.spyOn(service, 'readProduct').mockImplementationOnce(() => Promise.resolve(fakeProducts[0]))
         const resposta = await service.deleteProduct(1);
         expect(resposta).toEqual(fakeProducts[0]);
         expect(readProductSpy).toHaveBeenCalledTimes(1);
@@ -163,7 +163,7 @@ describe('Serviço de Produtos', () => {
     })
 
     it('Retorna produtos de acordo com uma lista de produtos', async()=>{
-        prismaMock.produtos.findMany.mockResolvedValueOnce([
+        prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
             {
                 cod: 1,
                 nome: 'Produto 1',
@@ -182,7 +182,8 @@ describe('Serviço de Produtos', () => {
                 preco: new Decimal(50.35),
                 quantidade: 78,
             }
-        ])
+        ]))
+        
         const resposta = await service.readManyProducts([
             {
                 produto_id: 1,
@@ -233,7 +234,7 @@ describe('Serviço de Produtos', () => {
     })
 
     it('Retorna os produtos com estoque maior que 0', async()=>{
-        prismaMock.produtos.findMany.mockResolvedValueOnce([
+        prismaMock.produtos.findMany.mockImplementationOnce(() => Promise.resolve([
             {
                 cod: 1,
                 nome: 'Produto 1',
@@ -252,7 +253,7 @@ describe('Serviço de Produtos', () => {
                 preco: new Decimal(50.35),
                 quantidade: 78,
             }
-        ])
+        ]))
         const resposta = await service.readAvailableProducts()
         expect(prisma.produtos.findMany).toHaveBeenCalledTimes(1);
         expect(prisma.produtos.findMany).toHaveBeenCalledWith({

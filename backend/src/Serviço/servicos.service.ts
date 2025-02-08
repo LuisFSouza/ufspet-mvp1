@@ -85,7 +85,7 @@ export class ServicosService {
             return await this.prisma.$transaction(async (tx) => {
                 const servico = await this.readService(id, tx)
                 if(servico){
-                    return tx.servicos.delete({
+                    return await tx.servicos.delete({
                         where: {
                             cod: id
                         }
